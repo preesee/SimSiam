@@ -11,7 +11,8 @@ from models import get_model
 from tools import AverageMeter, knn_monitor, Logger, file_exist_check
 from datasets import get_dataset
 from optimizers import get_optimizer, LR_Scheduler
-from linear_eval import main as linear_eval
+#from linear_eval import main as linear_eval
+from linear_cub_eval import main as linear_eval
 from datetime import datetime
 
 def main(device, args):
@@ -87,7 +88,7 @@ def main(device, args):
         if args.train.knn_monitor and epoch % args.train.knn_interval == 0: 
             accuracy = knn_monitor(model.module.backbone, memory_loader, test_loader, device, k=min(args.train.knn_k, len(memory_loader.dataset)), hide_progress=args.hide_progress) 
         
-        epoch_dict = {"epoch":epoch, "accuracy":accuracy}
+        epoch_dict = {"epoch":epoch, "knn_monitor: accuracy":accuracy}
         global_progress.set_postfix(epoch_dict)
         logger.update_scalers(epoch_dict)
     
