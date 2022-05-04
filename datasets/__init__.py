@@ -1,6 +1,7 @@
 import torch
 import torchvision
 from .random_dataset import RandomDataset
+from .CUB200 import CUB
 
 
 def get_dataset(dataset, data_dir, transform, train=True, download=False, debug_subset_size=None):
@@ -14,6 +15,11 @@ def get_dataset(dataset, data_dir, transform, train=True, download=False, debug_
         dataset = torchvision.datasets.CIFAR100(data_dir, train=train, transform=transform, download=download)
     elif dataset == 'imagenet':
         dataset = torchvision.datasets.ImageNet(data_dir, split='train' if train == True else 'val', transform=transform, download=download)
+    elif dataset =='cub200':
+        # dataset =     elif dataset == 'imagenet':
+        dataset = CUB(data_dir, is_train = True, transform=transform)
+        # trainloader = torch.utils.data.DataLoader(dataset, batch_size=2, shuffle=True, num_workers=0,
+        #                                           drop_last=True)
     elif dataset == 'random':
         dataset = RandomDataset()
     else:
