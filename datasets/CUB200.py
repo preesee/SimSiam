@@ -53,10 +53,12 @@ class CUB():
                               train_file_list[:data_len]]
             #  Read the training set label
             self.train_label = train_label_list
+            self.classes=len(set(train_label_list))
         if not self.is_train:
             self.test_img = [cv2.imread(os.path.join(self.root, 'images', test_file)) for test_file in
                              test_file_list[:data_len]]
             self.test_label = test_label_list
+            self.classes = len(set(test_label_list))
 
     #  Data to enhance
     def __getitem__(self,index):
