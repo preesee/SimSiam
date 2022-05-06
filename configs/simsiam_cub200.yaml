@@ -1,4 +1,4 @@
-name: simsiam-cifar10-experiment-resnet18_cifar_variant1
+name: simsiam-cub200-experiment-resnet50_cub200_variant1
 dataset: 
   name: cub200
   image_size: 32
@@ -6,7 +6,7 @@ dataset:
 
 model: 
   name: simsiam
-  backbone: resnet18_cifar_variant1
+  backbone: resnet50_cifar_variant1
   proj_layers: 2
 
 train:

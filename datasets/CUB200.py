@@ -53,14 +53,14 @@ class CUB():
         test_label_list = [x for i, x in zip(train_test_list, label_list) if not i][:data_len]
         if self.is_train:
             # scipy.misc.imread  The picture reads out as array type , namely numpy type
-            self.train_img = [cv2.imread(os.path.join(self.root, 'images', train_file)) for train_file in
+            self.train_img = [self.read_pic(os.path.join(self.root, 'images', train_file)) for train_file in
                               train_file_list[:data_len]]
             #  Read the training set label
             self.train_label = train_label_list
             self.targets=train_label_list
             self.classes=train_class_list
         if not self.is_train:
-            self.test_img = [cv2.imread(os.path.join(self.root, 'images', test_file)) for test_file in
+            self.test_img = [self.read_pic(os.path.join(self.root, 'images', test_file)) for test_file in
                              test_file_list[:data_len]]
             self.test_label = test_label_list
             self.targets = test_label_list
@@ -93,6 +93,14 @@ class CUB():
             return len(self.train_label)
         else:
             return len(self.test_label)
+
+    def read_pic(self, train_file ):
+        try:
+           img= cv2.imread(train_file)
+           return img
+        except Exception as e:
+            print(train_file)
+            print(e)
 
 if __name__ == '__main__':
     ''' dataset = CUB(root='./CUB_200_2011') for data in dataset: print(data[0].size(),data[1]) '''

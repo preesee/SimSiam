@@ -35,9 +35,10 @@ def main(device, args):
         batch_size=args.train.batch_size,
         **args.dataloader_kwargs
     )
+    #test_loader=memory_loader
     test_loader = torch.utils.data.DataLoader(
-        dataset=get_dataset( 
-            transform=get_aug(train=False, train_classifier=False, **args.aug_kwargs), 
+        dataset=get_dataset(
+            transform=get_aug(train=False, train_classifier=False, **args.aug_kwargs),
             train=False,
             **args.dataset_kwargs),
         shuffle=False,
@@ -118,6 +119,9 @@ if __name__ == "__main__":
 
     os.rename(args.log_dir, completed_log_dir)
     print(f'Log file has been saved to {completed_log_dir}')
+
+
+
 
 
 

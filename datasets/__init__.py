@@ -18,7 +18,7 @@ def get_dataset(dataset, data_dir, transform, train=True, download=False, debug_
         dataset = torchvision.datasets.ImageNet(data_dir, split='train' if train == True else 'val', transform=transform, download=download)
     elif dataset =='cub200':
         # dataset =     elif dataset == 'imagenet':
-        dataset = CUB(data_dir, is_train = True, transform=transform)
+        dataset = CUB(data_dir, is_train = train, transform=transform)
         print('')
         # trainloader = torch.utils.data.DataLoader(dataset, batch_size=2, shuffle=True, num_workers=0,
         #                                           drop_last=True)
