@@ -17,6 +17,7 @@ class CUB():
         img_txt_file = open(os.path.join(self.root, 'images.txt'))
         label_txt_file = open(os.path.join(self.root, 'image_class_labels.txt'))
         train_val_file = open(os.path.join(self.root, 'train_test_split.txt'))
+        train_class_file = open(os.path.join(self.root, 'classes.txt'))
         #  Picture index
         img_name_list = []
         for line in img_txt_file:
@@ -27,6 +28,9 @@ class CUB():
         label_list = []
         for line in label_txt_file:
             label_list.append(int(line[:-1].split(' ')[-1]) - 1)
+        train_class_list=[]
+        for line in train_class_file:
+            train_class_list.append(line[:-1].split('.')[-1] )
 
         #  Set up training and test sets
         train_test_list = []
@@ -53,12 +57,14 @@ class CUB():
                               train_file_list[:data_len]]
             #  Read the training set label
             self.train_label = train_label_list
-            self.classes=len(set(train_label_list))
+            self.targets=train_label_list
+            self.classes=train_class_list
         if not self.is_train:
             self.test_img = [cv2.imread(os.path.join(self.root, 'images', test_file)) for test_file in
                              test_file_list[:data_len]]
             self.test_label = test_label_list
-            self.classes = len(set(test_label_list))
+            self.targets = test_label_list
+            self.classes = train_class_list
 
     #  Data to enhance
     def __getitem__(self,index):

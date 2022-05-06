@@ -11,6 +11,7 @@ def get_dataset(dataset, data_dir, transform, train=True, download=False, debug_
         dataset = torchvision.datasets.STL10(data_dir, split='train+unlabeled' if train else 'test', transform=transform, download=download)
     elif dataset == 'cifar10':
         dataset = torchvision.datasets.CIFAR10(data_dir, train=train, transform=transform, download=download)
+        print('')
     elif dataset == 'cifar100':
         dataset = torchvision.datasets.CIFAR100(data_dir, train=train, transform=transform, download=download)
     elif dataset == 'imagenet':
@@ -18,6 +19,7 @@ def get_dataset(dataset, data_dir, transform, train=True, download=False, debug_
     elif dataset =='cub200':
         # dataset =     elif dataset == 'imagenet':
         dataset = CUB(data_dir, is_train = True, transform=transform)
+        print('')
         # trainloader = torch.utils.data.DataLoader(dataset, batch_size=2, shuffle=True, num_workers=0,
         #                                           drop_last=True)
     elif dataset == 'random':
