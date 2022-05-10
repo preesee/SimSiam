@@ -1,9 +1,18 @@
 import torch
 import torch.nn as nn
 import os
+import torch.utils.model_zoo as model_zoo
 # https://raw.githubusercontent.com/huyvnphan/PyTorch_CIFAR10/master/cifar10_models/resnet.py
 __all__ = ['ResNet', 'resnet18', 'resnet34', 'resnet50', 'resnet101',
            'resnet152', 'resnext50_32x4d', 'resnext101_32x8d']
+
+model_urls = {
+    'resnet18': 'https://download.pytorch.org/models/resnet18-5c106cde.pth',
+    'resnet34': 'https://download.pytorch.org/models/resnet34-333f7ec4.pth',
+    'resnet50': 'https://download.pytorch.org/models/resnet50-19c8e357.pth',
+    'resnet101': 'https://download.pytorch.org/models/resnet101-5d3b4d8f.pth',
+    'resnet152': 'https://download.pytorch.org/models/resnet152-b121ed2d.pth',
+}
 
 def conv3x3(in_planes, out_planes, stride=1, groups=1, dilation=1):
     """3x3 convolution with padding"""
@@ -122,7 +131,7 @@ class ResNet(nn.Module):
         self.base_width = width_per_group
         
         ## CIFAR10: kernel_size 7 -> 3, stride 2 -> 1, padding 3->1
-        self.conv1 = nn.Conv2d(3, self.inplanes, kernel_size=3, stride=1, padding=1, bias=False)
+        self.conv1 = nn.Conv2d(3, self.inplanes, kernel_size=7, stride=2, padding=3, bias=False)
         ## END
         
         self.bn1 = norm_layer(self.inplanes)
@@ -135,7 +144,7 @@ class ResNet(nn.Module):
                                        dilate=replace_stride_with_dilation[1])
         self.layer4 = self._make_layer(block, 512, layers[3], stride=2,
                                        dilate=replace_stride_with_dilation[2])
-        self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
+        self.avgpool = nn.AdaptiveAvgPool2d(7)
         self.fc = nn.Linear(512 * block.expansion, num_classes)
 
         for m in self.modules():
@@ -199,10 +208,12 @@ class ResNet(nn.Module):
 
 def _resnet(arch, block, layers, pretrained, progress, device, **kwargs):
     model = ResNet(block, layers, **kwargs)
+
     if pretrained:
-        script_dir = os.path.dirname(__file__)
-        state_dict = torch.load(script_dir + '/state_dicts/'+arch+'.pt', map_location=device)
-        model.load_state_dict(state_dict)
+        model.load_state_dict(model_zoo.load_url(model_urls[arch]))
+        # script_dir = os.path.dirname(__file__)
+        # state_dict = torch.load(script_dir + '/state_dicts/'+arch+'.pt', map_location=device)
+        # model.load_state_dict(state_dict)
     return model
 
 
