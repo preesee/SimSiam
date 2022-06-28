@@ -110,7 +110,7 @@ class Bottleneck(nn.Module):
 
 class ResNet(nn.Module):
 
-    def __init__(self, block, layers, num_classes=10, zero_init_residual=False,
+    def __init__(self, block, layers, num_classes=1000, zero_init_residual=False,
                  groups=1, width_per_group=64, replace_stride_with_dilation=None,
                  norm_layer=None):
         super(ResNet, self).__init__()
@@ -210,6 +210,8 @@ def _resnet(arch, block, layers, pretrained, progress, device, **kwargs):
     model = ResNet(block, layers, **kwargs)
 
     if pretrained:
+        print("pretrain resnet arch:")
+        print(arch)
         model.load_state_dict(model_zoo.load_url(model_urls[arch]))
         # script_dir = os.path.dirname(__file__)
         # state_dict = torch.load(script_dir + '/state_dicts/'+arch+'.pt', map_location=device)

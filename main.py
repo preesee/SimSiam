@@ -12,7 +12,9 @@ from tools import AverageMeter, knn_monitor, Logger, file_exist_check
 from datasets import get_dataset
 from optimizers import get_optimizer, LR_Scheduler
 #from linear_eval import main as linear_eval
-from linear_cub_eval import main as linear_eval
+from linear_cub_eval import main as cub_linear_eval
+from linear_imagenet100_eval import  main as imagenet100_linear_eval
+from linear_eval import main as linear_eval
 from datetime import datetime
 
 def main(device, args):
@@ -26,6 +28,7 @@ def main(device, args):
         batch_size=args.train.batch_size,
         **args.dataloader_kwargs
     )
+
     memory_loader = torch.utils.data.DataLoader(
         dataset=get_dataset(
             transform=get_aug(train=False, train_classifier=False, **args.aug_kwargs), 
@@ -84,14 +87,14 @@ def main(device, args):
             data_dict.update({'lr':lr_scheduler.get_lr()})
             
             local_progress.set_postfix(data_dict)
-            logger.update_scalers(data_dict)
+            #logger.update_scalers(data_dict)
 
         if args.train.knn_monitor and epoch % args.train.knn_interval == 0: 
             accuracy = knn_monitor(model.module.backbone, memory_loader, test_loader, device, k=min(args.train.knn_k, len(memory_loader.dataset)), hide_progress=args.hide_progress) 
         
         epoch_dict = {"epoch":epoch, "knn_monitor: accuracy":accuracy}
         global_progress.set_postfix(epoch_dict)
-        logger.update_scalers(epoch_dict)
+        #logger.update_scalers(epoch_dict)
     
     # Save checkpoint
     model_path = os.path.join(args.ckpt_dir, f"{args.name}_{datetime.now().strftime('%m%d%H%M%S')}.pth") # datetime.now().strftime('%Y%m%d_%H%M%S')
@@ -105,7 +108,8 @@ def main(device, args):
 
     if args.eval is not False:
         args.eval_from = model_path
-        linear_eval(args)
+        cub_linear_eval(args)
+        #imagenet100_linear_eval(args)
 
 
 if __name__ == "__main__":
