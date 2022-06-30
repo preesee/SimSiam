@@ -13,7 +13,7 @@ from datasets import get_dataset
 from optimizers import get_optimizer, LR_Scheduler
 #from linear_eval import main as linear_eval
 from linear_cub_eval import main as cub_linear_eval
-from linear_imagenet100_eval import  main as imagenet100_linear_eval
+from linear_stanfordcars_eval import  main as linear_stanfordcars_eval
 from linear_eval import main as linear_eval
 from datetime import datetime
 
@@ -106,10 +106,18 @@ def main(device, args):
     with open(os.path.join(args.log_dir, f"checkpoint_path.txt"), 'w+') as f:
         f.write(f'{model_path}')
 
+
     if args.eval is not False:
         args.eval_from = model_path
-        cub_linear_eval(args)
-        #imagenet100_linear_eval(args)
+        classes=len(test_loader.dataset.classes)
+        dataset_name=args.dataset.name
+        if dataset_name=='cub200':
+            cub_linear_eval(args)
+        elif dataset_name=='stanfordcars':
+            linear_stanfordcars_eval(args,classes)
+        elif dataset_name=='cifar10':
+            linear_eval(args)
+
 
 
 if __name__ == "__main__":

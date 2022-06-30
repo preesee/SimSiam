@@ -1,8 +1,11 @@
+import os.path
+
 import torch
 import torchvision
 from .random_dataset import RandomDataset
 from .CUB2011 import Cub2011 as CUB
 from .ImageNet100 import ImageNet100
+#from .StandfordCars import StandfordCars
 
 
 def get_dataset(dataset, data_dir, transform, train=True, download=False, debug_subset_size=None):
@@ -27,6 +30,8 @@ def get_dataset(dataset, data_dir, transform, train=True, download=False, debug_
         # print('')
         # trainloader = torch.utils.data.DataLoader(dataset, batch_size=2, shuffle=True, num_workers=0,
         #                                           drop_last=True)
+    elif dataset=='stanfordcars':
+        dataset= torchvision.datasets.ImageFolder(os.path.join(data_dir, 'train') if train == True else os.path.join(data_dir, 'test'), transform=transform)#StandfordCars(data_dir,train=train,transform=transform)
     elif dataset == 'random':
         dataset = RandomDataset()
     else:
