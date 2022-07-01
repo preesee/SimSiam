@@ -4,7 +4,8 @@ import torch
 from torch import nn 
 import torch.nn.functional as F 
 from torchvision import transforms 
-from math import pi, cos 
+from math import pi, cos
+from torchvision.models import resnet50
 from collections import OrderedDict
 HPS = dict(
     max_steps=int(1000. * 1281167 / 4096), # 1000 epochs * 1281167 samples / batch size = 100 epochs * N of step/epoch
@@ -72,7 +73,7 @@ class BYOL(nn.Module):
 
         self.target_encoder = copy.deepcopy(self.online_encoder)
         self.online_predictor = MLP(HPS['projection_size'])
-        raise NotImplementedError('Please put update_moving_average to training')
+        #raise NotImplementedError('Please put update_moving_average to training')
 
     def target_ema(self, k, K, base_ema=HPS['base_target_ema']):
         # tau_base = 0.996 
@@ -81,8 +82,9 @@ class BYOL(nn.Module):
         # return 1 - (1-self.tau_base) * (cos(pi*k/K)+1)/2 
 
     @torch.no_grad()
-    def update_moving_average(self, global_step, max_steps):
-        tau = self.target_ema(global_step, max_steps)
+    def update_moving_average(self): #, global_step, max_steps
+        #tau = self.target_ema(global_step, max_steps)
+        tau = 0.996
         for online, target in zip(self.online_encoder.parameters(), self.target_encoder.parameters()):
             target.data = tau * target.data + (1 - tau) * online.data
             
@@ -97,6 +99,7 @@ class BYOL(nn.Module):
         p2_o = h_o(z2_o)
 
         with torch.no_grad():
+            self.update_moving_average()
             z1_t = f_t(x1)
             z2_t = f_t(x2)
         
