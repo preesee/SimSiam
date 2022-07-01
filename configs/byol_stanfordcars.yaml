@@ -1,7 +1,7 @@
 name: byol-stanfordcars-resnet50-experiment
 dataset: 
   name: stanfordcars
-  image_size: 32
+  image_size: 224
   num_workers: 1
 
 model: 
