@@ -17,6 +17,13 @@
             </list>
           </settings>
         </remote-mappings>
+        <remote-mappings server-id="python@sftp://ubuntu@10.88.206.1:32586/home/ubuntu/miniconda3/envs/dl/bin/python">
+          <settings>
+            <list>
+              <mapping local-root="$PROJECT_DIR$" remote-root="/share/huawei/simsiam" />
+            </list>
+          </settings>
+        </remote-mappings>
       </list>
     </list>
   </component>

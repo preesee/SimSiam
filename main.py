@@ -1,19 +1,13 @@
 import os
 import torch
-import torch.nn as nn
-import torch.nn.functional as F 
-import torchvision
-import numpy as np
 from tqdm import tqdm
 from arguments import get_args
 from augmentations import get_aug
 from models import get_model
-from tools import AverageMeter, knn_monitor, Logger, file_exist_check
+from tools import knn_monitor, Logger
 from datasets import get_dataset
 from optimizers import get_optimizer, LR_Scheduler
 #from linear_eval import main as linear_eval
-from linear_cub_eval import main as cub_linear_eval
-from linear_stanfordcars_eval import  main as linear_stanfordcars_eval
 from linear_eval import main as linear_eval
 from datetime import datetime
 
@@ -110,13 +104,14 @@ def main(device, args):
     if args.eval is not False:
         args.eval_from = model_path
         classes=len(test_loader.dataset.classes)
-        dataset_name=args.dataset.name
-        if dataset_name=='cub200':
-            cub_linear_eval(args)
-        elif dataset_name=='stanfordcars':
-            linear_stanfordcars_eval(args,classes)
-        elif dataset_name=='cifar10':
-            linear_eval(args)
+        linear_eval(args,classes)
+        #dataset_name=args.dataset.name
+        # if dataset_name=='cub200':
+        #     cub_linear_eval(args)
+        # elif dataset_name=='stanfordcars':
+        #     linear_stanfordcars_eval(args,classes)
+        # elif dataset_name=='cifar10':
+
 
 
 
