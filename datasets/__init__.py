@@ -32,6 +32,12 @@ def get_dataset(dataset, data_dir, transform, train=True, download=False, debug_
         #                                           drop_last=True)
     elif dataset=='stanfordcars':
         dataset= torchvision.datasets.ImageFolder(os.path.join(data_dir, 'train') if train == True else os.path.join(data_dir, 'test'), transform=transform)#StandfordCars(data_dir,train=train,transform=transform)
+    elif dataset == 'aircrafts':
+        dataset = torchvision.datasets.ImageFolder(
+            os.path.join(data_dir, 'train') if train == True else os.path.join(data_dir, 'test'),
+            transform=transform)
+
+
     elif dataset == 'random':
         dataset = RandomDataset()
     else:
