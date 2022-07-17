@@ -1,4 +1,5 @@
 import torchvision.transforms as T
+import torch
 try:
     from torchvision.transforms import GaussianBlur
 except ImportError:
@@ -23,10 +24,32 @@ class SimSiamTransform():
             T.ToTensor(),
             T.Normalize(*mean_std)
         ])
+
+    def new_call(self, x):
+        mean_std=imagenet_mean_std
+        #x1=[]
+        x1=self.transform(x)
+        x2 = []
+        # x1.append( T.Normalize(*mean_std)(T.ToTensor()(self.transform.transforms[0](x))))
+        # x1.append(T.Normalize(*mean_std)(T.ToTensor()(self.transform.transforms[1](x))))
+        # x1.append(T.Normalize(*mean_std)(T.ToTensor()(self.transform.transforms[2](x))))
+        # x1.append( T.Normalize(*mean_std)(T.ToTensor()(self.transform.transforms[3](x))))
+        # x1.append( T.Normalize(*mean_std)(T.ToTensor()(self.transform.transforms[4](x))))
+        croped_x=self.transform.transforms[0](x)
+        #x2.append( T.Normalize(*mean_std)(T.ToTensor()(self.transform.transforms[0](croped_x))))
+        x2.append(T.Normalize(*mean_std)(T.ToTensor()(self.transform.transforms[1](croped_x))))
+        x2.append(T.Normalize(*mean_std)(T.ToTensor()(self.transform.transforms[2](croped_x))))
+        x2.append( T.Normalize(*mean_std)(T.ToTensor()(self.transform.transforms[3](croped_x))))
+        x2.append( T.Normalize(*mean_std)(T.ToTensor()(self.transform.transforms[4](croped_x))))
+        x2=torch.mean(torch.stack(x2), dim=0)
+        return x1, x2
     def __call__(self, x):
-        x1 = self.transform(x)
-        x2 = self.transform(x)
-        return x1, x2 
+        #x1 = self.transform(x)
+        #x2 = self.transform(x)
+        return self.new_call(x)
+        return x1, x2
+
+
 
 
 def to_pil_image(pic, mode=None):

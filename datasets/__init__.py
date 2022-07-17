@@ -42,7 +42,7 @@ def get_dataset(dataset, data_dir, transform, train=True, download=False, debug_
         dataset = RandomDataset()
     else:
         raise NotImplementedError
-    #debug_subset_size=50
+    #debug_subset_size=500
     if debug_subset_size is not None:
         dataset = torch.utils.data.Subset(dataset, range(0, debug_subset_size)) # take only one batch
         dataset.classes = dataset.dataset.classes

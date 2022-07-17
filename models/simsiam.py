@@ -8,7 +8,8 @@ def D(p, z, version='simplified'): # negative cosine similarity
     if version == 'original':
         z = z.detach() # stop gradient
         p = F.normalize(p, dim=1) # l2-normalize 
-        z = F.normalize(z, dim=1) # l2-normalize 
+        z = F.normalize(z, dim=1) # l2-normalize
+        #print(version)
         return -(p*z).sum(dim=1).mean()
 
     elif version == 'simplified':# same thing, much faster. Scroll down, speed test in __main__
@@ -16,6 +17,18 @@ def D(p, z, version='simplified'): # negative cosine similarity
     else:
         raise Exception
 
+def DD(z1, z2, version='simplified'): # negative cosine similarity
+    if version == 'original':
+        #z = z.detach() # stop gradient
+        p = F.normalize(z1, dim=1) # l2-normalize
+        z = F.normalize(z2, dim=1) # l2-normalize
+        #print(version)
+        return -(p*z).sum(dim=1).mean()
+
+    # elif version == 'simplified':# same thing, much faster. Scroll down, speed test in __main__
+    #     return - F.cosine_similarity(z1, z2.detach(), dim=-1).mean()
+    else:
+        raise Exception
 
 
 class projection_MLP(nn.Module):
@@ -100,11 +113,11 @@ class SimSiam(nn.Module):
         self.predictor = prediction_MLP()
     
     def forward(self, x1, x2):
-
+        ver='original'
         f, h = self.encoder, self.predictor
         z1, z2 = f(x1), f(x2)
-        p1, p2 = h(z1), h(z2)
-        L = D(p1, z2) / 2 + D(p2, z1) / 2
+        #p1, p2 = h(z1), h(z2)
+        L = DD(z1, z2,version=ver) / 2 + DD(z2, z1,version=ver) / 2
         return {'loss': L}
 
 

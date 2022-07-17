@@ -2,7 +2,7 @@ name: simsiam-stanfordcars-resnet50-experiment
 dataset: 
   name: stanfordcars
   image_size: 224
-  num_workers: 0
+  num_workers: 16
 
 model: 
   name: simsiam
@@ -20,7 +20,7 @@ train:
   final_lr: 0
   num_epochs: 100 # this parameter influence the lr decay
   stop_at_epoch: 100 # has to be smaller than num_epochs
-  batch_size: 64
+  batch_size: 128
   knn_monitor: True # knn monitor will take more time
   knn_interval: 1
   knn_k: 200
