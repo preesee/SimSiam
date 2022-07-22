@@ -1,72 +1,79 @@
+import os
+
 import torchvision.transforms as T
-import torch
+from torchvision.transforms.functional import crop
+import cv2
+from pytorchyolo import detect, models
+import io
+import numpy as np
 try:
     from torchvision.transforms import GaussianBlur
 except ImportError:
     from .gaussian_blur import GaussianBlur
-    T.GaussianBlur = GaussianBlur
-    
-imagenet_mean_std = [[0.485, 0.456, 0.406],[0.229, 0.224, 0.225]]
 
+    T.GaussianBlur = GaussianBlur
+
+imagenet_mean_std = [[0.485, 0.456, 0.406], [0.229, 0.224, 0.225]]
+
+cwd=os.getcwd()
+yolo_cfg=os.path.join(cwd,'augmentations','yolov3','yolov3.cfg')
+yolo_weight=os.path.join(cwd,'augmentations','yolov3','yolov3.weights')
+yolo_model = models.load_model(
+      yolo_cfg,
+      yolo_weight)
+#print(yolo_model)
 class SimSiamTransform():
     def __init__(self, image_size, mean_std=imagenet_mean_std):
-        image_size = 224 if image_size is None else image_size # by default simsiam use image size 224
-        p_blur = 0.5 if image_size > 32 else 0 # exclude cifar
+        image_size = 224 if image_size is None else image_size  # by default simsiam use image size 224
+        p_blur = 0.5 if image_size > 32 else 0  # exclude cifar
         # the paper didn't specify this, feel free to change this value
         # I use the setting from simclr which is 50% chance applying the gaussian blur
         # the 32 is prepared for cifar training where they disabled gaussian blur
         self.transform = T.Compose([
+            T.Lambda(self.yolo_crop),
             T.RandomResizedCrop(image_size, scale=(0.2, 1.0)),
             T.RandomHorizontalFlip(),
-            T.RandomApply([T.ColorJitter(0.4,0.4,0.4,0.1)], p=0.8),
+            T.RandomApply([T.ColorJitter(0.4, 0.4, 0.4, 0.1)], p=0.8),
             T.RandomGrayscale(p=0.2),
-            T.RandomApply([T.GaussianBlur(kernel_size=image_size//20*2+1, sigma=(0.1, 2.0))], p=p_blur),
+            T.RandomApply([T.GaussianBlur(kernel_size=image_size // 20 * 2 + 1, sigma=(0.1, 2.0))], p=p_blur),
             T.ToTensor(),
             T.Normalize(*mean_std)
         ])
 
-    def new_call(self, x):
-        mean_std=imagenet_mean_std
-        #x1=[]
-        x1=self.transform(x)
-        x2 = []
-        # x1.append( T.Normalize(*mean_std)(T.ToTensor()(self.transform.transforms[0](x))))
-        # x1.append(T.Normalize(*mean_std)(T.ToTensor()(self.transform.transforms[1](x))))
-        # x1.append(T.Normalize(*mean_std)(T.ToTensor()(self.transform.transforms[2](x))))
-        # x1.append( T.Normalize(*mean_std)(T.ToTensor()(self.transform.transforms[3](x))))
-        # x1.append( T.Normalize(*mean_std)(T.ToTensor()(self.transform.transforms[4](x))))
-        croped_x=self.transform.transforms[0](x)
-        #x2.append( T.Normalize(*mean_std)(T.ToTensor()(self.transform.transforms[0](croped_x))))
-        x2.append(T.Normalize(*mean_std)(T.ToTensor()(self.transform.transforms[1](croped_x))))
-        x2.append(T.Normalize(*mean_std)(T.ToTensor()(self.transform.transforms[2](croped_x))))
-        x2.append( T.Normalize(*mean_std)(T.ToTensor()(self.transform.transforms[3](croped_x))))
-        x2.append( T.Normalize(*mean_std)(T.ToTensor()(self.transform.transforms[4](croped_x))))
-        x2=torch.mean(torch.stack(x2), dim=0)
-        return x1, x2
     def __call__(self, x):
-        #x1 = self.transform(x)
-        #x2 = self.transform(x)
-        return self.new_call(x)
+        x1 = self.transform(x)
+        x2 = self.transform(x)
         return x1, x2
 
+    def yolo_crop(self,x):
+        # Convert OpenCV bgr to rgb
+        img = cv2.cvtColor(np.array(x), cv2.COLOR_BGR2RGB)
+
+        # Runs the YOLO model on the image
+        boxes = detect.detect_image(yolo_model, img)
+        if boxes is None:
+            return x
+        try:
+           return crop(x, boxes[0][0], boxes[0][1], boxes[0][2], boxes[0][3])
+        except  Exception as e :
+            print(e)
+            print('boxes size:')
+            print (boxes)
+            return x
 
 
 
 def to_pil_image(pic, mode=None):
     """Convert a tensor or an ndarray to PIL Image.
-
     See :class:`~torchvision.transforms.ToPILImage` for more details.
-
     Args:
         pic (Tensor or numpy.ndarray): Image to be converted to PIL Image.
         mode (`PIL.Image mode`_): color space and pixel depth of input data (optional).
-
     .. _PIL.Image mode: https://pillow.readthedocs.io/en/latest/handbook/concepts.html#concept-modes
-
     Returns:
         PIL Image: Image converted to PIL Image.
     """
-    if not(isinstance(pic, torch.Tensor) or isinstance(pic, np.ndarray)):
+    if not (isinstance(pic, torch.Tensor) or isinstance(pic, np.ndarray)):
         raise TypeError('pic should be Tensor or ndarray. Got {}.'.format(type(pic)))
 
     elif isinstance(pic, torch.Tensor):
@@ -137,13 +144,3 @@ def to_pil_image(pic, mode=None):
         raise TypeError('Input type {} is not supported'.format(npimg.dtype))
 
     return Image.fromarray(npimg, mode=mode)
-
-
-
-
-
-
-
-
-
-

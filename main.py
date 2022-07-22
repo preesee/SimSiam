@@ -10,9 +10,11 @@ from optimizers import get_optimizer, LR_Scheduler
 #from linear_eval import main as linear_eval
 from linear_eval import main as linear_eval
 from datetime import datetime
+#import mlflow
+#from mlflow import log_metric, log_param, log_artifacts
 
 def main(device, args):
-
+    torch.multiprocessing.set_start_method('spawn')
     train_loader = torch.utils.data.DataLoader(
         dataset=get_dataset(
             transform=get_aug(train=True, **args.aug_kwargs), 
@@ -66,9 +68,10 @@ def main(device, args):
     accuracy = 0 
     # Start training
     global_progress = tqdm(range(0, args.train.stop_at_epoch), desc=f'Training')
+    #with mlflow.start_run():
     for epoch in global_progress:
         model.train()
-        
+
         local_progress=tqdm(train_loader, desc=f'Epoch {epoch}/{args.train.num_epochs}', disable=args.hide_progress)
         for idx, ((images1, images2), labels) in enumerate(local_progress):
 
@@ -79,15 +82,19 @@ def main(device, args):
             optimizer.step()
             lr_scheduler.step()
             data_dict.update({'lr':lr_scheduler.get_lr()})
-            
+
             local_progress.set_postfix(data_dict)
             #logger.update_scalers(data_dict)
 
-        if args.train.knn_monitor and epoch % args.train.knn_interval == 0: 
-            accuracy = knn_monitor(model.module.backbone, memory_loader, test_loader, device, k=min(args.train.knn_k, len(memory_loader.dataset)), hide_progress=args.hide_progress) 
-        
-        epoch_dict = {"epoch":epoch, "knn_monitor: accuracy":accuracy}
-        global_progress.set_postfix(epoch_dict)
+        if args.train.knn_monitor and epoch % args.train.knn_interval == 0:
+            accuracy = knn_monitor(model.module.backbone, memory_loader, test_loader, device, k=min(args.train.knn_k, len(memory_loader.dataset)), hide_progress=args.hide_progress)
+
+            epoch_dict = {"epoch":epoch, "knn_monitor: accuracy":accuracy}
+
+            #mlflow.log_param("epoch", epoch)  # 参数
+            #mlflow.log_metric("accuracy", accuracy)  # 参数
+            #mlflow.log_param("lr",lr_scheduler.get_lr())
+            global_progress.set_postfix(epoch_dict)
         #logger.update_scalers(epoch_dict)
     
     # Save checkpoint
@@ -117,7 +124,8 @@ def main(device, args):
 
 if __name__ == "__main__":
     args = get_args()
-
+    #mlflow.set_tracking_uri("http://mlflow.nhnao.com:80")
+    #mlflow.set_experiment("simsiam_fb")
     main(device=args.device, args=args)
 
     completed_log_dir = args.log_dir.replace('in-progress', 'debug' if args.debug else 'completed')
